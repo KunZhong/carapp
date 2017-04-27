@@ -1,8 +1,9 @@
 package com.example.user.camera;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
@@ -12,8 +13,11 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URL;
 import java.net.UnknownHostException;
+
 
 public class MainActivity extends Activity implements View.OnClickListener,View.OnTouchListener {
 
@@ -51,6 +55,15 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     private Socket socket = null;
     private InputStream in = null;
     private OutputStream out = null;
+    String url = new String("http://plazacam.studentaffairs.duke.edu/mjpg/video.mjpg");
+
+    private boolean sendConnectionCloseHeader = false;
+    private MjpegView mv = null;
+
+    private int width = 640;
+    private int height = 480;
+    private final String TAG = "MainActivity";
+    private boolean suspending = false;
 
 
     @Override
@@ -62,13 +75,81 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         initView();
         setListener();
 
-        webview1.loadUrl("file:///android_asset/test.html");
+//        webview1.loadUrl("file:///android_asset/test.html");
+//        webview1.getSettings().setJavaScriptEnabled(true);  //设置浏览器的属性，支持JavaScript脚本
+//        webview1.setWebViewClient(new WebViewClient());     //当需要从一个网页跳转到另一个网页时，
+                                                        //我们希望目标网页仍然在当前WebView显示，而不是打开系统浏览器
+//        webview1.loadUrl("http://www.zhongkun.xyz");
 
+        new DoRead().execute(url);
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume: ");
+        super.onResume();
+
+        if(mv != null){
+
+            if(suspending){
+                new DoRead().execute(url);
+                suspending = false;
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause: ");
+        super.onPause();
+
+        if(mv != null){
+
+            if(mv.isStreaming()){
+
+                mv.stopPlayback();
+                suspending = true;
+            }
+        }
+    }
+//    public void sendConnectionCloseHeader() {
+//        sendConnectionCloseHeader = true;
+//    }
+    public class DoRead extends AsyncTask<String, Void, MjpegInputStream> {
+
+        @Override
+        protected MjpegInputStream doInBackground(String... params) {
+            try{
+
+                URL url = new URL(params[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestProperty("Cache-Control", "no-cache");
+
+//                if (sendConnectionCloseHeader) {
+//                    urlConnection.setRequestProperty("Connection", "close");
+//                }
+
+                InputStream inputStream = urlConnection.getInputStream();
+
+                return new MjpegInputStream(inputStream);
+
+            }catch (IOException e){
+
+                e.printStackTrace();
+            }
+            return null;
+        }
+        protected void onPostExecute(MjpegInputStream result) {
+
+            mv.setSource(result);
+            mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
+            mv.showFps(true);
+        }
     }
 
     public void initView() {
 
-        webview1 = (WebView) findViewById(R.id.webView1);
+//        webview1 = (WebView) findViewById(R.id.webView1);
 
         imgBtn_light = (ImageButton) findViewById(R.id.light);
         imgBtn_gravity = (ImageButton) findViewById(R.id.gravity);
@@ -83,6 +164,12 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         imgBtn_cameradown = (ImageButton) findViewById(R.id.camera_down);
         imgBtn_cameraup = (ImageButton) findViewById(R.id.camera_up);
 
+        mv = (MjpegView) findViewById(R.id.mv);
+
+        if(mv != null){
+
+            mv.setResolution(width,height);
+        }
     }
 
     public void setListener() {
@@ -105,31 +192,28 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     public void onClick(View v) {
         switch (v.getId()) {
 
-
             case R.id.camera:
-
+                Toast.makeText(this, "capture", Toast.LENGTH_SHORT).show();
                 cameraFlag = true;// take a photo
-
                 mynewthread = new MyThread();
                 mynewthread.start();
                 break;
-
             case R.id.setting:
 
                 cameraFlag = true;// take a photo
-
-                //mynewthread = new MyThread();
-                //mynewthread.start();
+                mynewthread = new MyThread();
+                mynewthread.start();
                 Toast.makeText(this,"open setting page",Toast.LENGTH_SHORT).show();
-
                 break;
 
             case R.id.light:
                 if (lightFlag) {
+                    Toast.makeText(this, "off light", Toast.LENGTH_SHORT).show();
                     lightFlag = false;
                     items = 0;  //turn off light
 
                 } else {
+                    Toast.makeText(this, "on light", Toast.LENGTH_SHORT).show();
                     lightFlag = true;
                     items = 1;//turn on light
                 }
@@ -140,10 +224,12 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.gravity:
 
                 if (gravityFlag) {
+                    Toast.makeText(this, "off gravity", Toast.LENGTH_SHORT).show();
                     gravityFlag = false;
                     items = 2;  //turn off gravity
 
                 } else {
+                    Toast.makeText(this, "on gravity", Toast.LENGTH_SHORT).show();
                     gravityFlag = true;
                     items = 3;  //turn on gravity
                 }
@@ -159,18 +245,16 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         switch (v.getId()){
             case R.id.go:
                 if(event.getAction() == MotionEvent.ACTION_UP){
-                    //Log.d("test", "cansal button ---> cancel");
-                    //mButton.setBackgroundResource(R.drawable.green);
                     items = 4;  //stop
+                    Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
 
                     mynewthread = new MyThread();
                     mynewthread.start();
 
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    //Log.d("test", "cansal button ---> down");
-                    //mButton.setBackgroundResource(R.drawable.yellow);
                     items = 5;  //go
+                    Toast.makeText(this, "go", Toast.LENGTH_SHORT).show();
 
                     mynewthread = new MyThread();
                     mynewthread.start();
@@ -181,13 +265,13 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.back:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
+                    Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    //Log.d("test", "cansal button ---> down");
-                    //mButton.setBackgroundResource(R.drawable.yellow);
                     items = 6;  //back
+                    Toast.makeText(this, "back", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
@@ -195,12 +279,14 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.right:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
+                    Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
 
                     items = 7;  //right
+                    Toast.makeText(this, "right", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
@@ -208,11 +294,14 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.left:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
+                    Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
+
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     items = 8;  //left
+                    Toast.makeText(this, "left", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
@@ -220,11 +309,13 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.camera_up:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 9;  //stop
+                    Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     items = 10;  //left
+                    Toast.makeText(this, "camera_up", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
@@ -232,11 +323,13 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.camera_down:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 9;  //stop
+                    Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     items = 11;  //left
+                    Toast.makeText(this, "camera_down", Toast.LENGTH_SHORT).show();
                     mynewthread = new MyThread();
                     mynewthread.start();
                 }
