@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/anim/alpha.xml",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/anim/alpha.xml"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/anim/translate.xml",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/anim/translate.xml"
+    }
+]

@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/layout-land/main.xml",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/layout-land/main.xml"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/layout-land/about.xml",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/layout-land/about.xml"
+    }
+]

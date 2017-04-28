@@ -1,0 +1,50 @@
+[
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/up.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/up.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/img.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/img.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/down.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/down.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/con.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/con.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/rb.xml",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/rb.xml"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/joystick_bg.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/joystick_bg.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/right.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/right.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/lg.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/lg.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/discon.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/discon.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/radialback.xml",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/radialback.xml"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/left.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/left.png"
+    },
+    {
+        "merged": "/home/user/AndroidStudioProjects/WifiCarController/app/build/intermediates/res/merged/debug/drawable/logo.png",
+        "source": "/home/user/AndroidStudioProjects/WifiCarController/app/src/main/res/drawable/logo.png"
+    }
+]
