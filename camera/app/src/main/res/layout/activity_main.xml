@@ -1,0 +1,104 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.example.user.camera.MjpegView
+        android:id="@+id/mv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageButton
+        android:id="@+id/light"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/btn_light"
+        android:contentDescription="@string/light" />
+
+    <ImageButton
+        android:id="@+id/gravity"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/btn_gravity"
+        android:contentDescription="@string/gravity" />
+
+    <ImageButton
+        android:id="@+id/setting"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="right"
+        android:background="@drawable/btn_setting"
+        android:contentDescription="@string/setting" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:layout_marginBottom="50dp">
+
+        <ImageButton
+            android:id="@+id/go"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_camera_up"
+            android:contentDescription="@string/light" />
+
+        <ImageButton
+            android:id="@+id/back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_camera_down"
+            android:contentDescription="@string/gravity" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal">
+
+        <ImageButton
+            android:id="@+id/camera_up"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_camera_up"
+            android:contentDescription="@string/light" />
+
+        <ImageButton
+            android:id="@+id/camera"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_camera_photograph"
+            android:contentDescription="@string/gravity" />
+
+        <ImageButton
+            android:id="@+id/camera_down"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_camera_down"
+            android:contentDescription="@string/gravity" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_marginBottom="50dp">
+
+        <ImageButton
+            android:id="@+id/left"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_go_left"
+            android:contentDescription="@string/light" />
+
+        <ImageButton
+            android:id="@+id/right"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_go_right"
+            android:contentDescription="@string/gravity" />
+    </LinearLayout>
+
+</FrameLayout>
