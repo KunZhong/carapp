@@ -2,6 +2,7 @@ package com.example.user.camera;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -80,4 +81,46 @@ public class MjpegInputStream extends  DataInputStream{
         return BitmapFactory.decodeStream(new ByteArrayInputStream(frameData));
     }
 
+    public static byte[]  myread(DataInputStream bin, int size, int max) {
+        byte[] image = new byte[size];
+        int hasRead = 0;
+        while (true) {
+            if (max > size - hasRead) {
+                max = size - hasRead;
+            }
+            try {
+                hasRead = hasRead + bin.read(image, hasRead, max);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d("mjpegInput", "myread: ");
+            }
+            if (hasRead == size) {
+                break;
+            }
+        }
+        return image;
+    }
+    Bitmap readMjpegFrame2() throws IOException{
+
+        // 1，从输入流中取20个字节，这20个字节表示当前图片的长度
+        byte[] imageSize_Byte = myread(this, 10, 4096);
+
+        // 2，把取出来的数据转为字符串，字符串的格式是 数字+len,比如一个图片的长度是10
+        // 那么现在的字符串就是"20len"
+        String imageSize_String = new String(imageSize_Byte);
+
+        // 3，我们需要的是字符串中的数字，因为我们获取这个数字的目的是为了获取图片
+        // /所以我们现在需要把字符串后面的len去掉
+        imageSize_String = imageSize_String.substring(0,
+                imageSize_String.indexOf("len"));
+
+        // 4，现在我们获取 图片长度是一个字符串，但是我们需要的是整型，所以我们现在把字符串转为整型
+        int imageSize_int = new Integer(imageSize_String);
+
+        // 5，计算出图片长度后，开始获取代表图片的字节
+        byte[] image = myread(this, imageSize_int, 4096);// 读取图片
+
+        return BitmapFactory.decodeByteArray(image, 0, image.length);
+
+    }
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Url" >
+        <EditTextPreference
+            android:inputType="text"
+            android:defaultValue="@string/ipaddress"
+            android:selectAllOnFocus="true"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:key = "com.example.user.camera.SettingActivity.IP"
+            android:title="IP"/>
+        <EditTextPreference
+            android:inputType="text"
+            android:defaultValue="8080"
+            android:selectAllOnFocus="true"
+            android:singleLine="false"
+            android:maxLines="1"
+            android:key = "com.example.user.camera.SettingActivity.CAMPORT"
+            android:title="Camera port"/>
+        <EditTextPreference
+            android:inputType="text"
+            android:defaultValue="8081"
+            android:selectAllOnFocus="true"
+            android:singleLine="false"
+            android:maxLines="1"
+            android:key = "com.example.user.camera.SettingActivity.CTLPORT"
+            android:title="Control port"/>
+    </PreferenceCategory>
+</PreferenceScreen>

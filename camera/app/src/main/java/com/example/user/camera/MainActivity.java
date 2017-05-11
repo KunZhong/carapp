@@ -1,27 +1,44 @@
 package com.example.user.camera;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.net.URL;
 import java.net.UnknownHostException;
+import java.sql.Date;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
 
+import static android.view.View.GONE;
+import static com.example.user.camera.SettingActivity.PREF_CAR_IP;
+import static com.example.user.camera.SettingActivity.PREF_CAR_CAMPORT;
+import static com.example.user.camera.SettingActivity.PREF_CAR_CTLPORT;
 
 public class MainActivity extends Activity implements View.OnClickListener,View.OnTouchListener {
 
-    private WebView webview1;
+    public static final String TAG = "MainActivity";
+    private static final int PROGRESS_NONE = 1;
+    private static final int PROGRESS_VISIBLE = 0;
+
 
     private ImageButton imgBtn_light;
     private ImageButton imgBtn_gravity;
@@ -35,6 +52,7 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     private ImageButton imgBtn_cameraup;
     private ImageButton imgBtn_cameradown;
     private ImageButton imgBtn_camera;
+    private ProgressBar progressBar;
 
     private boolean lightFlag = false;
     private boolean gravityFlag = false;
@@ -51,16 +69,10 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
 
     private MyThread mynewthread;
-
-
-    private boolean sendConnectionCloseHeader = false;
     private MjpegView mv = null;
 
     private int width = 640;
     private int height = 480;
-    private final String TAG = "MainActivity";
-    private boolean suspending = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,21 +82,16 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
         initView();
         setListener();
-
-        new DoRead().execute();
+        PreferenceManager.setDefaultValues(this, R.xml.pref_setting, false);
+//        new DoRead().execute();
+        Log.d(TAG, "onCreate: ");
     }
-
     @Override
     protected void onResume() {
         Log.d(TAG, "onResume: ");
         super.onResume();
-
-        if(mv != null){
-
-            if(suspending){
-                new DoRead().execute();
-                suspending = false;
-            }
+        if (!mv.isStreaming()) {
+            new DoRead().execute();
         }
     }
 
@@ -92,28 +99,58 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     protected void onPause() {
         Log.d(TAG, "onPause: ");
         super.onPause();
-
-        if(mv != null){
-
-            if(mv.isStreaming()){
-
-                mv.stopPlayback();
-                suspending = true;
-            }
+        if(mv.isStreaming()){
+            mv.stopPlayback();  //mRun = false , suspending = true;
         }
     }
+    private String getPreference(String key) {
+        return PreferenceManager
+                .getDefaultSharedPreferences(this)
+                .getString(key, "");
+    }
 
+    Handler myMessageHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+
+            switch (msg.what) {
+                case PROGRESS_NONE:
+                    progressBar.setVisibility(View.GONE);
+                    break;
+                case PROGRESS_VISIBLE:
+                    progressBar.setVisibility(View.VISIBLE);
+                    break;
+                default:
+                    break;
+
+            }
+        }
+    };
     private Socket socket = null;
     private InputStream in = null;
     private OutputStream out = null;
 
-    public class DoRead extends AsyncTask<String, Void, MjpegInputStream> {
+
+    public class DoRead extends AsyncTask<Integer, Integer, MjpegInputStream> {
 
         @Override
-        protected MjpegInputStream doInBackground(String... params) {
+        protected MjpegInputStream doInBackground(Integer... params) {
             try{
 
-                socket = new Socket("192.168.1.233", 8080);
+                Message msgVisible = new Message();
+                msgVisible.what = PROGRESS_VISIBLE;
+                myMessageHandler.sendMessage(msgVisible);
+
+                Log.d(TAG, "doInBackground: "+getPreference(PREF_CAR_IP)+getPreference(PREF_CAR_CAMPORT));
+                String port = getPreference(PREF_CAR_CAMPORT);
+                int portnum = Integer.parseInt(port);
+//                socket = new Socket("192.168.1.233", 8080);
+                socket = new Socket(getPreference(PREF_CAR_IP),portnum);
+                socket.setTcpNoDelay(true); //实时性，客户端每发送一次数据，无论数据包大小都会将这些数据发送出去
+                socket.setReceiveBufferSize(65536);//64k
+                socket.setSendBufferSize(65536);
+                socket.setKeepAlive(true);//防止服务器端无效时，客户端长时间处于连接状态
+
                 in = socket.getInputStream();
                 out = socket.getOutputStream();
 
@@ -122,6 +159,11 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
                 out.write(s.getBytes());
                 out.flush();
 
+
+                Message mNone = new Message();
+                mNone.what = PROGRESS_NONE;
+                myMessageHandler.sendMessage(mNone);
+                
                 return new MjpegInputStream(in);
 
             }catch (IOException e){
@@ -131,16 +173,11 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             return null;
         }
         protected void onPostExecute(MjpegInputStream result) {
-
             mv.setSource(result);
-            mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
-            mv.showFps(true);
         }
     }
 
     public void initView() {
-
-//        webview1 = (WebView) findViewById(R.id.webView1);
 
         imgBtn_light = (ImageButton) findViewById(R.id.light);
         imgBtn_gravity = (ImageButton) findViewById(R.id.gravity);
@@ -155,12 +192,12 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         imgBtn_cameradown = (ImageButton) findViewById(R.id.camera_down);
         imgBtn_cameraup = (ImageButton) findViewById(R.id.camera_up);
 
+        progressBar = (ProgressBar) findViewById(R.id.progressbar);
+
         mv = (MjpegView) findViewById(R.id.mv);
-
-        if(mv != null){
-
-            mv.setResolution(width,height);
-        }
+        mv.setResolution(width,height);
+        mv.setDisplayMode(MjpegView.SIZE_FULLSCREEN);
+        mv.showFps(true);
     }
 
     public void setListener() {
@@ -178,7 +215,43 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         imgBtn_cameraup.setOnTouchListener(this);
         imgBtn_cameradown.setOnTouchListener(this);
     }
+    private void screenshot(String bitName)
+    {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date curDate = new Date(System.currentTimeMillis());
+        String filename = formatter.format(curDate);
 
+        //得到SD卡的路径也设置文件名
+        //这里可以简化的写成imageFilePath=Uri.parse("file:////sdcard/my.jpg");
+        String imageFilePath=Environment.getExternalStorageDirectory()
+                .getAbsolutePath()+"/"+filename+".jpg"; //sdcard 根目录
+
+        Bitmap bmp = mv.getBitmap();
+        if (bmp != null)
+        {
+            File file = new File(imageFilePath);
+            if(file.exists()){
+                file.delete();
+            }
+            FileOutputStream out;
+            try{
+                out = new FileOutputStream(file);
+                if(bmp.compress(Bitmap.CompressFormat.PNG, 100, out))
+                {
+                    out.flush();
+                    out.close();
+                }
+            }
+            catch (FileNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -186,15 +259,11 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             case R.id.camera:
                 Toast.makeText(this, "capture", Toast.LENGTH_SHORT).show();
                 cameraFlag = true;// take a photo
-                mynewthread = new MyThread();
-                mynewthread.start();
+                screenshot("capture.jpg");
                 break;
             case R.id.setting:
 
-                cameraFlag = true;// take a photo
-                mynewthread = new MyThread();
-                mynewthread.start();
-                Toast.makeText(this,"open setting page",Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, SettingActivity.class));
                 break;
 
             case R.id.light:
@@ -339,7 +408,9 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
                 if (socket == null) {//判断socket是否为null，避免按钮多次按下时创建多个Socket对象
                     try {
-                        socket = new Socket("192.168.1.233", 8888);
+                        String port = getPreference(PREF_CAR_CTLPORT);
+                        int portnum = Integer.parseInt(port);
+                        socket = new Socket(getPreference(PREF_CAR_IP), portnum);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

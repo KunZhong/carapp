@@ -6,6 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="gravity">gravity</string>
     <string name="light">light</string>
-    <string name="setting">setting!</string>
-
+    <string name="setting">setting</string>
+    <string name="port">8080</string>
+    <string name="ipaddress">192.168.1.233</string>
 </resources>

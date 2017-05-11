@@ -17,16 +17,10 @@ import java.io.IOException;
 
 public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 
-//    public static final String TAG = "MJPEG";
-//
-//    public final static int POSITION_UPPER_LEFT = 9;
-//    public final static int POSITION_UPPER_RIGHT = 3;
-//    public final static int POSITION_LOWER_LEFT = 12;
+
     public final static int POSITION_LOWER_RIGHT = 6;
 
-    public final static int SIZE_STANDARD = 1;
-    public final static int SIZE_BEST_FIT = 4;
-    public final static int SIZE_FULLSCREEN = 8;
+    public final static int SIZE_FULLSCREEN = 1;
 
     SurfaceHolder holder;
     Context saved_context;
@@ -37,6 +31,8 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean showFps = false;
     private boolean mRun = false;
     private boolean surfaceDone = false;
+
+    private Bitmap bmp = null;
 
     //画文本
     private Paint overlayPaint;
@@ -49,8 +45,6 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     private int dispHeight;
     private int displayMode;
 
-    private boolean suspending = false;
-    private Bitmap bmp = null;
 
     // image size
     public int IMG_WIDTH = 640;
@@ -91,7 +85,6 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             //得到文本的边界，上下左右，提取到bounds中，可以通过这计算文本的宽和高
             p.getTextBounds(fps, 0, fps.length(), b);
 
-
             // false indentation to fix forum layout             
             Bitmap bm = Bitmap.createBitmap(b.width(), b.height(), Bitmap.Config.ARGB_8888);
 
@@ -107,7 +100,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 
             start = System.currentTimeMillis();
             PorterDuffXfermode mode = new PorterDuffXfermode(PorterDuff.Mode.DST_OVER);
-
+            long t = 0 ;
             int width;
             int height;
             Rect destRect = null;
@@ -118,6 +111,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
 
             while (mRun) {
 
+                t = System.currentTimeMillis();
+                System.out.println("currentTime:"+t);
+
                 if (surfaceDone) try {
 
                     c = mSurfaceHolder.lockCanvas();
@@ -126,7 +122,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                     }
                     synchronized (mSurfaceHolder) {
                         try {
-                            bmp = mIn.readMjpegFrame();
+
+
+                            bmp = mIn.readMjpegFrame2();
 
                             destRect = destRect(bmp.getWidth(), bmp.getHeight());
                             c.drawColor(Color.BLACK);
@@ -154,6 +152,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                                     ovl = makeFpsOverlay(overlayPaint);
                                 }
                             }
+
                         }catch (IOException e){
 
                         }
@@ -163,6 +162,15 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                         mSurfaceHolder.unlockCanvasAndPost(c);
                     }
                 }
+                try {
+                    //Thread.sleep(30);
+                    //这些操作已经有120ms间隔
+                    Thread.sleep(Math.max(0, 50-(System.currentTimeMillis()-t)));//20fps
+                    System.out.println("sleepTIme: "+ (System.currentTimeMillis()-t));
+                }catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+
             }
         }
     }
@@ -204,28 +212,9 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public void resumePlayback() {
-
-        if (suspending) {
-
-            if (mIn != null) {
-
-                mRun = true;
-                SurfaceHolder holder = getHolder();
-                holder.addCallback(this);
-                thread = new MjpegViewThread(holder, saved_context);
-                thread.start();
-                suspending = false;
-            }
-        }
-    }
 
     public void stopPlayback() {
 
-        if (mRun) {
-
-            suspending = true;
-        }
         mRun = false;
         if (thread != null) {
 
@@ -281,10 +270,8 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public void setSource(MjpegInputStream source) {
 
         mIn = source;
-        if (!suspending) {
+        if (!isStreaming()) {
             startPlayback();
-        } else {
-            resumePlayback();
         }
     }
 
@@ -312,4 +299,5 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
     public boolean isStreaming() {
         return mRun;
     }
+    public Bitmap getBitmap(){return bmp;}
 }
