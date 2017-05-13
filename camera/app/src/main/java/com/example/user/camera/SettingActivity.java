@@ -22,7 +22,7 @@ public class SettingActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.pref_setting);
         bindPreferenceSummaryToValue(findPreference(PREF_CAR_IP));
         bindPreferenceSummaryToValue(findPreference(PREF_CAR_CAMPORT));
-
+        bindPreferenceSummaryToValue(findPreference(PREF_CAR_CTLPORT));
     }
 
     private static final String TAG = "SettingActivity";

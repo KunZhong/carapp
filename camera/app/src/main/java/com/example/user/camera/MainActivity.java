@@ -56,19 +56,10 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
 
     private boolean lightFlag = false;
     private boolean gravityFlag = false;
-    private int items = 0;// default: light off,gravity off
+    private int olditems = -1;
+    private int items = -1;// default: light off,gravity off
 
-    private boolean settingFlag = false;
-    private boolean cameraFlag = false;
-    private boolean cameraUp = false;
-    private boolean cameraDown = false;
-    private boolean go = false;
-    private boolean back = false;
-    private boolean left = false;
-    private boolean right = false;
-
-
-    private MyThread mynewthread;
+    private static MyThread mynewthread;
     private MjpegView mv = null;
 
     private int width = 640;
@@ -84,6 +75,8 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
         setListener();
         PreferenceManager.setDefaultValues(this, R.xml.pref_setting, false);
 //        new DoRead().execute();
+        mynewthread = new MyThread();
+        mynewthread.start();     //ctl_client
         Log.d(TAG, "onCreate: ");
     }
     @Override
@@ -126,9 +119,9 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
             }
         }
     };
-    private Socket socket = null;
-    private InputStream in = null;
-    private OutputStream out = null;
+    private static Socket cam_socket = null;
+    private static InputStream in = null;
+    private static OutputStream out = null;
 
 
     public class DoRead extends AsyncTask<Integer, Integer, MjpegInputStream> {
@@ -145,14 +138,14 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
                 String port = getPreference(PREF_CAR_CAMPORT);
                 int portnum = Integer.parseInt(port);
 //                socket = new Socket("192.168.1.233", 8080);
-                socket = new Socket(getPreference(PREF_CAR_IP),portnum);
-                socket.setTcpNoDelay(true); //实时性，客户端每发送一次数据，无论数据包大小都会将这些数据发送出去
-                socket.setReceiveBufferSize(65536);//64k
-                socket.setSendBufferSize(65536);
-                socket.setKeepAlive(true);//防止服务器端无效时，客户端长时间处于连接状态
+                cam_socket = new Socket(getPreference(PREF_CAR_IP),portnum);
+                cam_socket.setTcpNoDelay(true); //实时性，客户端每发送一次数据，无论数据包大小都会将这些数据发送出去
+                cam_socket.setReceiveBufferSize(65536);//64k
+                cam_socket.setSendBufferSize(65536);
+                cam_socket.setKeepAlive(true);//防止服务器端无效时，客户端长时间处于连接状态
 
-                in = socket.getInputStream();
-                out = socket.getOutputStream();
+                in = cam_socket.getInputStream();
+                out = cam_socket.getOutputStream();
 
                 //请求服务器的图片资源
                 String s = new String("GET/stream.mjpeg\n");
@@ -254,11 +247,14 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
     }
     @Override
     public void onClick(View v) {
+
+        System.out.println("before :olditmes = "+olditems+",items = "+items);
+        olditems = items;
+
         switch (v.getId()) {
 
             case R.id.camera:
                 Toast.makeText(this, "capture", Toast.LENGTH_SHORT).show();
-                cameraFlag = true;// take a photo
                 screenshot("capture.jpg");
                 break;
             case R.id.setting:
@@ -277,8 +273,6 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
                     lightFlag = true;
                     items = 1;//turn on light
                 }
-                mynewthread = new MyThread();
-                mynewthread.start();
                 break;
 
             case R.id.gravity:
@@ -293,32 +287,26 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
                     gravityFlag = true;
                     items = 3;  //turn on gravity
                 }
-                mynewthread = new MyThread();
-                mynewthread.start();
                 break;
         }
+        System.out.println("after:olditmes = "+olditems+",items = "+items);
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
+        System.out.println("before touch :olditmes = "+olditems+",items = "+items);
+
+        olditems = items;
         switch (v.getId()){
             case R.id.go:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
                     Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
-
-                    mynewthread = new MyThread();
-                    mynewthread.start();
-
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     items = 5;  //go
                     Toast.makeText(this, "go", Toast.LENGTH_SHORT).show();
-
-                    mynewthread = new MyThread();
-                    mynewthread.start();
-
                 }
                 break;
 
@@ -326,156 +314,148 @@ public class MainActivity extends Activity implements View.OnClickListener,View.
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
                     Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     items = 6;  //back
                     Toast.makeText(this, "back", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 break;
             case R.id.right:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
                     Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
 
                     items = 7;  //right
                     Toast.makeText(this, "right", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 break;
             case R.id.left:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 4;  //stop
                     Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
-
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
                     items = 8;  //left
                     Toast.makeText(this, "left", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 break;
+
             case R.id.camera_up:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 9;  //stop
                     Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    items = 10;  //left
+                    items = 10;  //camup
                     Toast.makeText(this, "camera_up", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 break;
             case R.id.camera_down:
                 if(event.getAction() == MotionEvent.ACTION_UP){
                     items = 9;  //stop
                     Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 if(event.getAction() == MotionEvent.ACTION_DOWN){
-                    items = 11;  //left
+                    items = 11;  //camdown
                     Toast.makeText(this, "camera_down", Toast.LENGTH_SHORT).show();
-                    mynewthread = new MyThread();
-                    mynewthread.start();
                 }
                 break;
         }
-
+        System.out.println("after ontouch :olditmes = "+olditems+",items = "+items);
         return false;
     }
+
+    private static Socket ctl_socket = null;
+    private static OutputStream ctl_out = null;
 
     class MyThread extends Thread {
         @Override
         public void run() {
             super.run();
 
-            try {
+            while(true){
+                try {
 
-                if (socket == null) {//判断socket是否为null，避免按钮多次按下时创建多个Socket对象
+                    if (ctl_socket == null) {//判断socket是否为null，避免按钮多次按下时创建多个Socket对象
+                        try {
+                            String port = getPreference(PREF_CAR_CTLPORT);
+                            int portnum = Integer.parseInt(port);
+                            ctl_socket = new Socket(getPreference(PREF_CAR_IP), portnum);
+
+                            ctl_socket.setTcpNoDelay(true); //实时性，客户端每发送一次数据，无论数据包大小都会将这些数据发送出去
+                            ctl_socket.setKeepAlive(true);//防止服务器端无效时，客户端长时间处于连接状态
+
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    else {
+                        if(ctl_out == null)
+                            //3、获取输入输出流对象
+                            ctl_out = ctl_socket.getOutputStream();
+                    }
+
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(olditems != items) {
+                    System.out.println("diff run :olditmes = "+olditems+",items = "+items);
+                    String cmd = null;
+                    switch(items){
+                        case 0:
+                            cmd = "lighton";
+                            break;
+                        case 1:
+                            cmd = "lightoff";
+                            break;
+                        case 2:
+                            cmd = "gravityoff";
+                            break;
+                        case 3:
+                            cmd = "gravityon";
+                            break;
+                        case 4:
+                            cmd = "stop";
+                            break;
+                        case 5:
+                            cmd = "go";
+                            break;
+                        case 6:
+                            cmd = "back";
+                            break;
+                        case 7:
+                            cmd = "right";
+                            break;
+                        case 8:
+                            cmd = "left";
+                            break;
+                        case 9:
+                            cmd = "camstop";
+                            break;
+                        case 10:
+                            cmd = "camup";
+                            break;
+                        case 11:
+                            cmd = "camdown";
+                            break;
+                        default:
+                            break;
+                    }
+                    olditems = items;
+                /* judge */
                     try {
-                        String port = getPreference(PREF_CAR_CTLPORT);
-                        int portnum = Integer.parseInt(port);
-                        socket = new Socket(getPreference(PREF_CAR_IP), portnum);
+                        ctl_out.write(cmd.getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                //3、获取输入输出流对象
-                out = socket.getOutputStream();
-
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            String cmd = null;
-            switch(items){
-                case 0:
-                    cmd = "lighton";
-                    break;
-                case 1:
-                    cmd = "lightoff";
-                    break;
-                case 2:
-                    cmd = "Gravityoff";
-                    break;
-                case 3:
-                    cmd = "Gravityon";
-                    break;
-                case 4:
-                    cmd = "stop";
-                    break;
-                case 5:
-                    cmd = "go";
-                    break;
-                case 6:
-                    cmd = "back";
-                    break;
-                case 7:
-                    cmd = "right";
-                    break;
-                case 8:
-                    cmd = "left";
-                    break;
-                case 9:
-                    cmd = "camera_stop";
-                    break;
-                case 10:
-                    cmd = "camera_up";
-                    break;
-                case 11:
-                    cmd = "camera_down";
-                    break;
-            }
-
-            if (cameraFlag) {
-                cmd = "taphoto";
-                cameraFlag = false;
-            }
-                /* judge */
-            try {
-                out.write(cmd.getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
-
     }
 }
 
