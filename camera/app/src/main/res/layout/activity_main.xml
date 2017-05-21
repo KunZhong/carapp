@@ -16,25 +16,28 @@
     android:layout_gravity="center"/>
     <ImageButton
         android:id="@+id/light"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:background="@drawable/btn_light"
+        android:src="@drawable/btn_light_off"
+        android:background="#00000000"
         android:contentDescription="@string/light" />
 
     <ImageButton
         android:id="@+id/gravity"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="@drawable/btn_gravity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/btn_gravity_off"
+        android:background="#00000000"
         android:contentDescription="@string/gravity" />
 
     <ImageButton
         android:id="@+id/setting"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:background="@drawable/btn_setting"
+        android:src="@drawable/setting_btn"
+        android:background="#00000000"
         android:contentDescription="@string/setting" />
 
     <LinearLayout
@@ -48,14 +51,14 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/btn_camera_up"
-            android:contentDescription="@string/light" />
+            android:contentDescription="go" />
 
         <ImageButton
             android:id="@+id/back"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/btn_camera_down"
-            android:contentDescription="@string/gravity" />
+            android:contentDescription="back" />
     </LinearLayout>
 
     <LinearLayout
@@ -68,21 +71,21 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/btn_camera_up"
-            android:contentDescription="@string/light" />
+            android:contentDescription="camera_up" />
 
         <ImageButton
             android:id="@+id/camera"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:background="@drawable/btn_camera_photograph"
-            android:contentDescription="@string/gravity" />
+            android:background="@drawable/camera_btn"
+            android:contentDescription="camera_photograph" />
 
         <ImageButton
             android:id="@+id/camera_down"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/btn_camera_down"
-            android:contentDescription="@string/gravity" />
+            android:contentDescription="camera_down" />
     </LinearLayout>
 
     <LinearLayout
@@ -96,14 +99,14 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/btn_go_left"
-            android:contentDescription="@string/light" />
+            android:contentDescription="go_left" />
 
         <ImageButton
             android:id="@+id/right"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/btn_go_right"
-            android:contentDescription="@string/gravity" />
+            android:contentDescription="go_right" />
     </LinearLayout>
 
 </FrameLayout>

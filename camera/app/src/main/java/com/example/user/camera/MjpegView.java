@@ -112,7 +112,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
             while (mRun) {
 
                 t = System.currentTimeMillis();
-                System.out.println("currentTime:"+t);
+//                System.out.println("currentTime:"+t);
 
                 if (surfaceDone) try {
 
@@ -166,7 +166,7 @@ public class MjpegView extends SurfaceView implements SurfaceHolder.Callback {
                     //Thread.sleep(30);
                     //这些操作已经有120ms间隔
                     Thread.sleep(Math.max(0, 50-(System.currentTimeMillis()-t)));//20fps
-                    System.out.println("sleepTIme: "+ (System.currentTimeMillis()-t));
+//                    System.out.println("sleepTIme: "+ (System.currentTimeMillis()-t));
                 }catch (InterruptedException e){
                     e.printStackTrace();
                 }
